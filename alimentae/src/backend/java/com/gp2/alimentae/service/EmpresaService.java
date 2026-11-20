@@ -1,6 +1,8 @@
 
 package com.gp2.alimentae.service;
 
+import com.gp2.alimentae.dto.request.EmpresaRequestDto;
+import com.gp2.alimentae.dto.response.EmpresaResponseDto;
 import com.gp2.alimentae.entity.Empresa;
 import com.gp2.alimentae.entity.Ong;
 import com.gp2.alimentae.entity.TipoUsuario;
@@ -102,5 +104,85 @@ public class EmpresaService {
         empresa.setUsuario(usuario);
 
         return empresaRepository.save(empresa);
+    }
+
+    public EmpresaResponseDto atualizar(EmpresaRequestDto request, Long id) {
+        Long usuarioId = request.usuarioId();
+
+        if (usuarioId == null) {
+            throw new IllegalArgumentException(
+                    "É necessário informar o usuário responsável."
+            );
+        }
+
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Usuário não encontrado."
+                        ));
+
+        if (usuario.getTipoUsuario() != TipoUsuario.EMPRESA) {
+            throw new IllegalArgumentException(
+                    "O usuário informado não é do tipo EMPRESA."
+            );
+        }
+
+        if (request.cnpj().isBlank()) {
+            throw new IllegalArgumentException("O CNPJ deve ser informado.");
+        }
+        if (request.cnpj().trim().length() != 14) {
+            throw new IllegalArgumentException(
+                    "O CNPJ deve possuir 14 dígitos."
+            );
+        }
+        if (request.nomeFantasia().isBlank()) {
+            throw new IllegalArgumentException("O nome deve ser informado.");
+        }
+
+        String cnpj = request.cnpj().replaceAll("\\D", "");
+
+        Empresa empresa = buscarPorId(id);
+
+        empresa.setNomeFantasia(request.nomeFantasia());
+        empresa.setCnpj(cnpj);
+        empresa.setEndereco(request.endereco());
+        empresa.setTelefone(request.telefone());
+
+        empresaRepository.save(empresa);
+        return paraDTO(empresa);
+    }
+
+    public void deletar (Empresa empresa) {
+        if (empresa.getUsuario() == null
+                || empresa.getUsuario().getId() == null) {
+            throw new IllegalArgumentException(
+                    "É necessário informar o usuário responsável."
+            );
+        }
+
+        Long usuarioId = empresa.getUsuario().getId();
+
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Usuário não encontrado."
+                        ));
+
+        if (usuario.getTipoUsuario() != TipoUsuario.EMPRESA) {
+            throw new IllegalArgumentException(
+                    "O usuário informado não é do tipo EMPRESA."
+            );
+        }
+
+        empresaRepository.delete(empresa);
+    }
+
+    public EmpresaResponseDto paraDTO(Empresa empresa) {
+        return new EmpresaResponseDto(empresa.getId(),
+                empresa.getNomeFantasia(),
+                empresa.getCnpj(),
+                empresa.getEndereco(),
+                empresa.getTelefone(),
+                empresa.getUsuario().getId());
     }
 }
