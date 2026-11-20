@@ -2,10 +2,7 @@ package com.gp2.alimentae.controller;
 
 import com.gp2.alimentae.entity.Empresa;
 import com.gp2.alimentae.service.EmpresaService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,4 +24,12 @@ public class EmpresaController {
     public Empresa buscarPorId(@PathVariable Long id) {
         return empresaService.buscarPorId(id);
     }
+
+    @DeleteMapping("empresa/{id}")
+    public void deletarEmpresa(@PathVariable Long id) {
+        Empresa empresa = empresaService.buscarPorId(id);
+        empresaService.deletar(empresa);
+    }
+
+
 }

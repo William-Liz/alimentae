@@ -1,6 +1,7 @@
 
 package com.gp2.alimentae.service;
 
+import com.gp2.alimentae.dto.response.EmpresaResponseDto;
 import com.gp2.alimentae.entity.Empresa;
 import com.gp2.alimentae.entity.Ong;
 import com.gp2.alimentae.entity.TipoUsuario;
@@ -102,5 +103,30 @@ public class EmpresaService {
         empresa.setUsuario(usuario);
 
         return empresaRepository.save(empresa);
+    }
+
+    public void deletar (Empresa empresa) {
+        if (empresa.getUsuario() == null
+                || empresa.getUsuario().getId() == null) {
+            throw new IllegalArgumentException(
+                    "É necessário informar o usuário responsável."
+            );
+        }
+
+        Long usuarioId = empresa.getUsuario().getId();
+
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Usuário não encontrado."
+                        ));
+
+        if (usuario.getTipoUsuario() != TipoUsuario.EMPRESA) {
+            throw new IllegalArgumentException(
+                    "O usuário informado não é do tipo EMPRESA."
+            );
+        }
+
+        empresaRepository.delete(empresa);
     }
 }
