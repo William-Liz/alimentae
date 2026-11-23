@@ -5,14 +5,18 @@ import com.gp2.alimentae.dto.response.OngResponseDto;
 import com.gp2.alimentae.entity.Ong;
 import com.gp2.alimentae.entity.Usuario;
 import com.gp2.alimentae.service.OngService;
-
+import com.gp2.alimentae.dto.request.OngAtualizacaoRequestDto;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+
+import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/ongs")
@@ -27,7 +31,8 @@ public class OngController {
     // Cadastro
     @PostMapping
     public ResponseEntity<OngResponseDto> cadastrar(
-            @Valid @RequestBody OngRequestDto request) {
+            @Valid @RequestBody OngRequestDto request,
+            Authentication authentication) {
 
         Ong ong = new Ong();
 
@@ -37,12 +42,10 @@ public class OngController {
         ong.setAreaAtuacao(request.areaAtuacao());
         ong.setTelefone(request.telefone());
 
-        Usuario usuario = new Usuario();
-        usuario.setId(request.usuarioId());
-
-        ong.setUsuario(usuario);
-
-        Ong salva = ongService.cadastrar(ong);
+        Ong salva = ongService.cadastrar(
+                ong,
+                authentication.getName()
+        );
 
         OngResponseDto response = paraDTO(salva);
 
@@ -83,5 +86,45 @@ public class OngController {
                 ong.getTelefone(),
                 ong.getUsuario().getId()
         );
+    }
+
+    // Atualizar dados da ONG
+    @PutMapping("/{id}")
+    public ResponseEntity<OngResponseDto> atualizar(
+            @PathVariable Long id,
+            @Valid @RequestBody OngAtualizacaoRequestDto request,
+            Authentication authentication) {
+
+        Ong dadosAtualizados = new Ong();
+
+        dadosAtualizados.setNome(request.nome());
+        dadosAtualizados.setCnpj(request.cnpj());
+        dadosAtualizados.setEndereco(request.endereco());
+        dadosAtualizados.setAreaAtuacao(request.areaAtuacao());
+        dadosAtualizados.setTelefone(request.telefone());
+
+        Ong ongAtualizada = ongService.atualizar(
+                id,
+                dadosAtualizados,
+                authentication.getName()
+        );
+
+        return ResponseEntity.ok(paraDTO(ongAtualizada));
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Map<String, String>> tratarNaoEncontrada(
+            EntityNotFoundException exception) {
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("erro", exception.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> tratarDadosInvalidos(
+            IllegalArgumentException exception) {
+
+        return ResponseEntity.badRequest()
+                .body(Map.of("erro", exception.getMessage()));
     }
 }

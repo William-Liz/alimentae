@@ -1,8 +1,11 @@
 package com.gp2.alimentae.dto.request;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 public record OngRequestDto(
+
         @NotBlank(message = "O nome da ONG é obrigatório.")
         @Size(max = 150, message = "O nome deve ter no máximo 150 caracteres.")
         String nome,
@@ -24,13 +27,6 @@ public record OngRequestDto(
 
         @NotBlank(message = "O telefone é obrigatório.")
         @Size(max = 20, message = "O telefone deve ter no máximo 20 caracteres.")
-        String telefone,
+        String telefone
 
-        @NotNull(message = "O ID do usuário é obrigatório.")
-        @Positive(message = "O ID do usuário deve ser um número positivo.")
-        Long usuarioId
-
-) {
-
-}
-
+) {}

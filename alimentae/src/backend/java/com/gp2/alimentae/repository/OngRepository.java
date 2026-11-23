@@ -11,4 +11,6 @@ public interface OngRepository extends JpaRepository<Ong, Long> {
     boolean existsByCnpj(String cnpj);
 
     Optional<Ong> findByUsuario_Id(Long usuarioId);
+
+    boolean existsByCnpjAndIdNot(String cnpj, Long id);
 }
