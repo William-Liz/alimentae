@@ -5,12 +5,14 @@ import com.gp2.alimentae.entity.Empresa;
 import com.gp2.alimentae.entity.Ong;
 import com.gp2.alimentae.entity.TipoUsuario;
 import com.gp2.alimentae.entity.Usuario;
+import com.gp2.alimentae.exception.BusinessException;
 import com.gp2.alimentae.repository.EmpresaRepository;
 import com.gp2.alimentae.repository.OngRepository;
 import com.gp2.alimentae.repository.UsuarioRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,7 +44,8 @@ public class OngService {
     public Ong buscarPorId(Long id) {
         return ongRepository.findById(id)
                 .orElseThrow(() ->
-                        new EntityNotFoundException(
+                        new BusinessException(
+                                HttpStatus.NOT_FOUND,
                                 "ONG não encontrada."
                         ));
     }
@@ -51,7 +54,8 @@ public class OngService {
     public Ong cadastrar(Ong ong) {
 
         if (ong.getCnpj() == null) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "O CNPJ deve ser informado."
             );
         }
@@ -59,20 +63,23 @@ public class OngService {
         String cnpj = ong.getCnpj().replaceAll("\\D", "");
 
         if (cnpj.length() != 14) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "O CNPJ deve possuir 14 dígitos."
             );
         }
 
         if (ongRepository.existsByCnpj(cnpj)) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.CONFLICT,
                     "Este CNPJ já está cadastrado."
             );
         }
 
         if (ong.getUsuario() == null
                 || ong.getUsuario().getId() == null) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "É necessário informar o usuário responsável."
             );
         }
@@ -81,19 +88,22 @@ public class OngService {
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() ->
-                        new EntityNotFoundException(
+                        new BusinessException(
+                                HttpStatus.NOT_FOUND,
                                 "Usuário não encontrado."
                         ));
 
         if (usuario.getTipoUsuario() != TipoUsuario.ONG) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "O usuário informado não é do tipo ONG."
             );
         }
 
         if (ongRepository.findByUsuario_Id(usuarioId).isPresent()
                 || empresaRepository.findByUsuario_Id(usuarioId).isPresent()) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.CONFLICT,
                     "Este usuário já possui um perfil institucional."
             );
         }
