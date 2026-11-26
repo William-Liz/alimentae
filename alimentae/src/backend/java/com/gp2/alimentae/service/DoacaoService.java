@@ -6,12 +6,14 @@ import com.gp2.alimentae.entity.Empresa;
 import com.gp2.alimentae.entity.StatusDoacao;
 import com.gp2.alimentae.entity.StatusSolicitacao;
 
+import com.gp2.alimentae.exception.BusinessException;
 import com.gp2.alimentae.repository.DoacaoRepository;
 import com.gp2.alimentae.repository.EmpresaRepository;
 import com.gp2.alimentae.repository.SolicitacaoRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,7 +56,8 @@ public class DoacaoService {
     public Doacao buscarPorId(Long id) {
         return doacaoRepository.findById(id)
                 .orElseThrow(() ->
-                        new EntityNotFoundException(
+                        new BusinessException(
+                                HttpStatus.NOT_FOUND,
                                 "Doação não encontrada."
                         ));
     }
@@ -69,34 +72,39 @@ public class DoacaoService {
 
         if (doacao.getNomeAlimento() == null
                 || doacao.getNomeAlimento().isBlank()) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "O nome do alimento deve ser informado."
             );
         }
 
         if (doacao.getQuantidade() == null
                 || doacao.getQuantidade().signum() <= 0) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "A quantidade deve ser maior que zero."
             );
         }
 
         if (doacao.getUnidadeMedida() == null) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "A unidade de medida deve ser informada."
             );
         }
 
         if (doacao.getValidade() == null
                 || doacao.getValidade().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "Informe uma data de validade válida."
             );
         }
 
         if (doacao.getEmpresa() == null
                 || doacao.getEmpresa().getId() == null) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "É necessário informar a empresa responsável."
             );
         }
@@ -105,7 +113,8 @@ public class DoacaoService {
 
         Empresa empresa = empresaRepository.findById(empresaId)
                 .orElseThrow(() ->
-                        new EntityNotFoundException(
+                        new BusinessException(
+                                HttpStatus.NOT_FOUND,
                                 "Empresa não encontrada."
                         ));
 
@@ -126,7 +135,8 @@ public class DoacaoService {
         Doacao doacao = buscarPorId(id);
 
         if (doacao.getStatus() == StatusDoacao.CANCELADA) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "Esta doação já está cancelada."
             );
         }
@@ -142,7 +152,8 @@ public class DoacaoService {
                         );
 
         if (possuiSolicitacoesAtivas) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "Resolva as solicitações pendentes ou aprovadas "
                             + "antes de cancelar a doação."
             );
