@@ -7,12 +7,14 @@ import com.gp2.alimentae.entity.Solicitacao;
 import com.gp2.alimentae.entity.StatusDoacao;
 import com.gp2.alimentae.entity.StatusSolicitacao;
 
+import com.gp2.alimentae.exception.BusinessException;
 import com.gp2.alimentae.repository.DoacaoRepository;
 import com.gp2.alimentae.repository.OngRepository;
 import com.gp2.alimentae.repository.SolicitacaoRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,39 +62,45 @@ public class SolicitacaoService {
 
         if (quantidadeSolicitada == null
                 || quantidadeSolicitada.signum() <= 0) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "A quantidade solicitada deve ser maior que zero."
             );
         }
 
         Ong ong = ongRepository.findById(ongId)
                 .orElseThrow(() ->
-                        new EntityNotFoundException(
+                        new BusinessException(
+                                HttpStatus.NOT_FOUND,
                                 "ONG não encontrada."
                         ));
 
         Doacao doacao = doacaoRepository
                 .buscarPorIdComBloqueio(doacaoId)
                 .orElseThrow(() ->
-                        new EntityNotFoundException(
+                        new BusinessException(
+                                HttpStatus.NOT_FOUND,
                                 "Doação não encontrada."
                         ));
 
         if (doacao.getStatus() != StatusDoacao.DISPONIVEL) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "Esta doação não está disponível."
             );
         }
 
         if (doacao.getValidade().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "Esta doação está vencida."
             );
         }
 
         if (quantidadeSolicitada.compareTo(
                 doacao.getQuantidadeDisponivel()) > 0) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "A quantidade solicitada é maior que a disponível."
             );
         }
@@ -114,7 +122,8 @@ public class SolicitacaoService {
                 buscarSolicitacaoComBloqueio(solicitacaoId);
 
         if (solicitacao.getStatus() != StatusSolicitacao.PENDENTE) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "Somente solicitações pendentes podem ser aprovadas."
             );
         }
@@ -122,17 +131,19 @@ public class SolicitacaoService {
         Doacao doacao = doacaoRepository.buscarPorIdComBloqueio(
                 solicitacao.getDoacao().getId()
         ).orElseThrow(() ->
-                new EntityNotFoundException("Doação não encontrada.")
+                new BusinessException(HttpStatus.NOT_FOUND, "Doação não encontrada.")
         );
 
         if (!doacao.getEmpresa().getId().equals(empresaId)) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "Esta doação não pertence à empresa informada."
             );
         }
 
         if (doacao.getStatus() != StatusDoacao.DISPONIVEL) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "Esta doação não está disponível."
             );
         }
@@ -140,7 +151,8 @@ public class SolicitacaoService {
         BigDecimal quantidade = solicitacao.getQuantidadeSolicitada();
 
         if (doacao.getQuantidadeDisponivel().compareTo(quantidade) < 0) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "Não há quantidade suficiente para aprovar esta solicitação."
             );
         }
@@ -169,13 +181,15 @@ public class SolicitacaoService {
 
         if (!solicitacao.getDoacao().getEmpresa().getId()
                 .equals(empresaId)) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "Esta solicitação não pertence à empresa informada."
             );
         }
 
         if (solicitacao.getStatus() != StatusSolicitacao.PENDENTE) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "Somente solicitações pendentes podem ser recusadas."
             );
         }
@@ -192,7 +206,8 @@ public class SolicitacaoService {
                 buscarSolicitacaoComBloqueio(solicitacaoId);
 
         if (!solicitacao.getOng().getId().equals(ongId)) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "Esta solicitação não pertence à ONG informada."
             );
         }
@@ -207,11 +222,12 @@ public class SolicitacaoService {
             Doacao doacao = doacaoRepository.buscarPorIdComBloqueio(
                     solicitacao.getDoacao().getId()
             ).orElseThrow(() ->
-                    new EntityNotFoundException("Doação não encontrada.")
+                    new BusinessException(HttpStatus.NOT_FOUND, "Doação não encontrada.")
             );
 
             if (doacao.getStatus() == StatusDoacao.CANCELADA) {
-                throw new IllegalStateException(
+                throw new BusinessException(
+                        HttpStatus.BAD_REQUEST,
                         "Não é possível devolver quantidade a uma doação cancelada."
                 );
             }
@@ -223,7 +239,8 @@ public class SolicitacaoService {
 
             if (quantidadeRestaurada.compareTo(
                     doacao.getQuantidade()) > 0) {
-                throw new IllegalStateException(
+                throw new BusinessException(
+                        HttpStatus.BAD_REQUEST,
                         "A quantidade restaurada ultrapassaria a quantidade original."
                 );
             }
@@ -237,7 +254,8 @@ public class SolicitacaoService {
             solicitacao.setStatus(StatusSolicitacao.CANCELADA);
 
         } else {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "Esta solicitação não pode ser cancelada."
             );
         }
@@ -252,13 +270,15 @@ public class SolicitacaoService {
                 buscarSolicitacaoComBloqueio(solicitacaoId);
 
         if (!solicitacao.getOng().getId().equals(ongId)) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "Esta solicitação não pertence à ONG informada."
             );
         }
 
         if (solicitacao.getStatus() != StatusSolicitacao.APROVADA) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "Somente solicitações aprovadas podem ser concluídas."
             );
         }
@@ -271,7 +291,8 @@ public class SolicitacaoService {
     private Solicitacao buscarSolicitacaoComBloqueio(Long id) {
         return solicitacaoRepository.buscarPorIdComBloqueio(id)
                 .orElseThrow(() ->
-                        new EntityNotFoundException(
+                        new BusinessException(
+                                HttpStatus.NOT_FOUND,
                                 "Solicitação não encontrada."
                         ));
     }
