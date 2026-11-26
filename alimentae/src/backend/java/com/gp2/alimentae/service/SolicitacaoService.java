@@ -43,13 +43,54 @@ public class SolicitacaoService {
     }
 
     @Transactional(readOnly = true)
+    public Solicitacao buscarPorId(Long id){
+        return solicitacaoRepository.findById(id)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Solicitação não encontrada"));
+    }
+
+    @Transactional(readOnly = true)
+    public Solicitacao buscarPorIdEOng(Long id, Long ongId){
+        Solicitacao solicitacao = buscarPorId(id);
+
+        if (!solicitacao.getOng().getId().equals(ongId)){
+            throw new IllegalArgumentException(
+                    "Esta solicitação não pertence à ONG informada");
+        }
+        return solicitacao;
+    }
+
+    @Transactional(readOnly = true)
+    public Solicitacao buscarPorIdEEmpresa(Long id, Long empresaId){
+        Solicitacao solicitacao = buscarPorId(id);
+
+        if (!solicitacao.getDoacao().getEmpresa().getId().equals(empresaId)){
+            throw new IllegalArgumentException(
+                    "Esta solicitação não pertence à empresa informada"
+            );
+        }
+        return solicitacao;
+    }
+
+    @Transactional(readOnly = true)
     public List<Solicitacao> listarPorOng(Long ongId) {
         return solicitacaoRepository.findByOng_Id(ongId);
     }
 
     @Transactional(readOnly = true)
+    public List<Solicitacao> listarPorEmpresa(Long empresaId) {
+        return solicitacaoRepository.findByDoacao_Empresa_Id(empresaId);
+    }
+
+    @Transactional(readOnly = true)
     public List<Solicitacao> listarPorDoacao(Long doacaoId) {
         return solicitacaoRepository.findByDoacao_Id(doacaoId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Solicitacao> listarPorStatus(StatusSolicitacao status){
+        return solicitacaoRepository.findByStatus(status);
     }
 
     @Transactional
@@ -230,7 +271,11 @@ public class SolicitacaoService {
 
             doacao.setQuantidadeDisponivel(quantidadeRestaurada);
 
-            doacao.setStatus(StatusDoacao.DISPONIVEL);
+            if (doacao.getValidade().isBefore(LocalDate.now())){
+                doacao.setStatus(StatusDoacao.CANCELADA);
+            }else{
+                doacao.setStatus(StatusDoacao.DISPONIVEL);
+            }
 
             doacaoRepository.save(doacao);
 
