@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import org.springframework.security.access.AccessDeniedException;
+
 @Service
 public class OngService {
 
@@ -51,8 +53,32 @@ public class OngService {
     }
 
     @Transactional
-    public Ong cadastrar(Ong ong) {
+    public Ong cadastrar(Ong ong, String emailAutenticado) {
 
+        // Busca o usuário autenticado pelo e-mail do JWT
+        Usuario usuario = usuarioRepository
+                .findByEmail(emailAutenticado.trim().toLowerCase())
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Usuário autenticado não encontrado."
+                        ));
+
+        // Somente usuários do tipo ONG podem cadastrar um perfil de ONG
+        if (usuario.getTipoUsuario() != TipoUsuario.ONG) {
+            throw new AccessDeniedException(
+                    "Somente usuários do tipo ONG podem cadastrar este perfil."
+            );
+        }
+
+        // Verifica se o usuário já possui um perfil institucional
+        if (ongRepository.findByUsuario_Id(usuario.getId()).isPresent()
+                || empresaRepository.findByUsuario_Id(usuario.getId()).isPresent()) {
+            throw new IllegalArgumentException(
+                    "Este usuário já possui um perfil institucional."
+            );
+        }
+
+        // Valida o CNPJ
         if (ong.getCnpj() == null) {
             throw new BusinessException(
                     HttpStatus.BAD_REQUEST,
@@ -84,9 +110,23 @@ public class OngService {
             );
         }
 
-        Long usuarioId = ong.getUsuario().getId();
+        ong.setCnpj(cnpj);
 
-        Usuario usuario = usuarioRepository.findById(usuarioId)
+        // Vincula a ONG ao usuário autenticado
+        ong.setUsuario(usuario);
+
+        return ongRepository.save(ong);
+    }
+
+    @Transactional
+    public Ong atualizar(Long id, Ong dadosAtualizados, String emailAutenticado) {
+
+        // Busca a ONG que será atualizada
+        Ong ongExistente = buscarPorId(id);
+
+        // Identifica o usuário que está autenticado
+        Usuario usuarioAutenticado = usuarioRepository
+                .findByEmail(emailAutenticado.trim().toLowerCase())
                 .orElseThrow(() ->
                         new BusinessException(
                                 HttpStatus.NOT_FOUND,
@@ -105,12 +145,49 @@ public class OngService {
             throw new BusinessException(
                     HttpStatus.CONFLICT,
                     "Este usuário já possui um perfil institucional."
+                        new EntityNotFoundException(
+                                "Usuário autenticado não encontrado."
+                        ));
+
+        // Verifica se a ONG pertence ao usuário autenticado
+        if (!ongExistente.getUsuario().getId()
+                .equals(usuarioAutenticado.getId())) {
+
+            throw new AccessDeniedException(
+                    "Você não tem permissão para atualizar esta ONG."
             );
         }
 
-        ong.setCnpj(cnpj);
-        ong.setUsuario(usuario);
+        // Valida o CNPJ
+        if (dadosAtualizados.getCnpj() == null) {
+            throw new IllegalArgumentException(
+                    "O CNPJ deve ser informado."
+            );
+        }
 
-        return ongRepository.save(ong);
+        String cnpj = dadosAtualizados.getCnpj()
+                .replaceAll("\\D", "");
+
+        if (cnpj.length() != 14) {
+            throw new IllegalArgumentException(
+                    "O CNPJ deve possuir 14 dígitos."
+            );
+        }
+
+        // Verifica se outra ONG já utiliza esse CNPJ
+        if (ongRepository.existsByCnpjAndIdNot(cnpj, id)) {
+            throw new IllegalArgumentException(
+                    "Este CNPJ já está cadastrado para outra ONG."
+            );
+        }
+
+        // Atualiza os dados da ONG
+        ongExistente.setNome(dadosAtualizados.getNome());
+        ongExistente.setCnpj(cnpj);
+        ongExistente.setEndereco(dadosAtualizados.getEndereco());
+        ongExistente.setAreaAtuacao(dadosAtualizados.getAreaAtuacao());
+        ongExistente.setTelefone(dadosAtualizados.getTelefone());
+
+        return ongRepository.save(ongExistente);
     }
 }

@@ -1,9 +1,3 @@
-create database if not exists alimentae
-character set utf8mb4 Collate
-       utf8mb4_unicode_ci;
-
-use alimentae;
-
 CREATE TABLE usuario (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(120) NOT NULL,

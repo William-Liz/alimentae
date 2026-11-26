@@ -9,8 +9,8 @@ public record DoacaoRequestDto(
         String nomeAlimento,
         String descricao,
         BigDecimal quantidade,
+        BigDecimal quantidadeDisponivel,
         UnidadeMedida unidadeMedida,
         LocalDate validade,
         Long empresaId
-) {
-}
+) {}
