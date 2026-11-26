@@ -19,6 +19,8 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
 
     List<Solicitacao> findByDoacao_Id(Long doacaoId);
 
+    List<Solicitacao> findByDoacao_Empresa_Id(Long empresaId);
+
     List<Solicitacao> findByStatus(StatusSolicitacao status);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
