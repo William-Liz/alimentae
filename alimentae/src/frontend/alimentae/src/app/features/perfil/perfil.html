@@ -1,0 +1,145 @@
+
+<div class="profile-page">
+
+  <header class="profile-header">
+    <div class="header-brand">
+      <img
+        src="/images/logo-alimentae.png"
+        alt="Logo Alimentaê"
+      />
+
+      <div>
+        <h1>Alimentaê</h1>
+        <span>Meu perfil</span>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="logout-button"
+      (click)="sair()"
+    >
+      Sair da conta
+    </button>
+  </header>
+
+  <main class="profile-content">
+
+    <div class="page-heading">
+      <span class="eyebrow">MINHA CONTA</span>
+
+      <h2>Meu perfil</h2>
+
+      <p>
+        Consulte as informações da sua conta no Alimentaê.
+      </p>
+    </div>
+
+    @if (carregando()) {
+
+      <div class="state-card">
+        <div class="loading-indicator"></div>
+        <p>Carregando seus dados...</p>
+      </div>
+
+    } @else if (mensagemErro()) {
+
+      <div class="state-card error-card">
+        <h3>Não foi possível carregar o perfil</h3>
+
+        <p>{{ mensagemErro() }}</p>
+
+        <button
+          type="button"
+          class="primary-button"
+          (click)="carregarPerfil()"
+        >
+          Tentar novamente
+        </button>
+      </div>
+
+    } @else if (usuario(); as dados) {
+
+      <section class="profile-card">
+
+        <div class="card-heading">
+          <div class="profile-avatar">
+            {{ dados.nome.charAt(0).toUpperCase() }}
+          </div>
+
+          <div class="profile-identity">
+            <h3>{{ dados.nome }}</h3>
+
+            <span class="account-type">
+              {{ obterTipoUsuario(dados.tipoUsuario) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="information-section">
+
+          <h4>Informações da conta</h4>
+
+          <div class="information-grid">
+
+            <div class="information-item">
+              <span class="information-label">
+                Nome
+              </span>
+
+              <span class="information-value">
+                {{ dados.nome }}
+              </span>
+            </div>
+
+            <div class="information-item">
+              <span class="information-label">
+                E-mail
+              </span>
+
+              <span class="information-value">
+                {{ dados.email }}
+              </span>
+            </div>
+
+            <div class="information-item">
+              <span class="information-label">
+                Identificador
+              </span>
+
+              <span class="information-value">
+                #{{ dados.id }}
+              </span>
+            </div>
+
+            <div class="information-item">
+              <span class="information-label">
+                Tipo de conta
+              </span>
+
+              <span class="information-value">
+                {{ obterTipoUsuario(dados.tipoUsuario) }}
+              </span>
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="profile-footer">
+          <p>
+            Seus dados estão vinculados à sua conta no Alimentaê.
+          </p>
+        </div>
+
+      </section>
+
+    }
+
+  </main>
+
+</div>

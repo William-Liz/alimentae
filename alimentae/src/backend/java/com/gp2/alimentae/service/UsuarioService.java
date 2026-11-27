@@ -58,4 +58,16 @@ public class UsuarioService {
 
         return usuarioRepository.save(usuario);
     }
+
+    @Transactional(readOnly = true)
+    public Usuario buscarPorEmail(String email) {
+        return usuarioRepository
+                .findByEmail(email.trim().toLowerCase())
+                .orElseThrow(() ->
+                        new BusinessException(
+                                HttpStatus.NOT_FOUND,
+                                "Usuário não encontrado."
+                        )
+                );
+    }
 }

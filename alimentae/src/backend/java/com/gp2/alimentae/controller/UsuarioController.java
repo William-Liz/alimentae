@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,4 +67,22 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.buscarPorId(id));
     }
 
+    // Buscar os dados do usuário autenticado
+    @GetMapping("/me")
+    public ResponseEntity<UsuarioResponseDto> buscarUsuarioAutenticado(
+            @AuthenticationPrincipal Jwt jwt) {
+
+        Usuario usuario = usuarioService.buscarPorEmail(
+                jwt.getSubject()
+        );
+
+        UsuarioResponseDto response = new UsuarioResponseDto(
+                usuario.getId(),
+                usuario.getNome(),
+                usuario.getEmail(),
+                usuario.getTipoUsuario()
+        );
+
+        return ResponseEntity.ok(response);
+    }
 }
