@@ -46,100 +46,129 @@
         </p>
       </div>
 
-      <form
-        [formGroup]="formulario"
-        (ngSubmit)="entrar()"
-      >
+      @if (token()) {
 
-        <div class="form-group">
-          <label for="email">
-            E-mail
-          </label>
+        <div class="session-card">
+          <h3>Você está conectado!</h3>
 
-          <input
-            id="email"
-            type="email"
-            formControlName="email"
-            placeholder="seuemail@exemplo.com"
-            autocomplete="email"
-          />
+          <p>
+            Tipo de usuário:
+            <strong>{{ tipoUsuario() }}</strong>
+          </p>
 
-          @if (
-            formulario.controls.email.touched &&
-            formulario.controls.email.hasError('required')
-          ) {
-            <span class="field-error">
-              Informe seu e-mail.
-            </span>
-          }
-
-          @if (
-            formulario.controls.email.touched &&
-            formulario.controls.email.hasError('email')
-          ) {
-            <span class="field-error">
-              Informe um e-mail válido.
-            </span>
-          }
+          <button
+            type="button"
+            class="submit-button"
+            (click)="sair()"
+          >
+            Sair da conta
+          </button>
         </div>
 
-        <div class="form-group">
-          <label for="senha">
-            Senha
-          </label>
+      } @else {
 
-          <div class="password-field">
+        <form
+          [formGroup]="formulario"
+          (ngSubmit)="entrar()"
+        >
+
+          <div class="form-group">
+            <label for="email">
+              E-mail
+            </label>
+
             <input
-              id="senha"
-              [type]="senhaVisivel() ? 'text' : 'password'"
-              formControlName="senha"
-              placeholder="Digite sua senha"
-              autocomplete="current-password"
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="seuemail@exemplo.com"
+              autocomplete="email"
             />
 
-            <button
-              type="button"
-              class="password-toggle"
-              (click)="alternarVisibilidadeSenha()"
-            >
-              {{ senhaVisivel() ? 'Ocultar' : 'Mostrar' }}
-            </button>
+            @if (
+              formulario.controls.email.touched &&
+              formulario.controls.email.hasError('required')
+            ) {
+              <span class="field-error">
+                Informe seu e-mail.
+              </span>
+            }
+
+            @if (
+              formulario.controls.email.touched &&
+              formulario.controls.email.hasError('email')
+            ) {
+              <span class="field-error">
+                Informe um e-mail válido.
+              </span>
+            }
           </div>
 
-          @if (
-            formulario.controls.senha.touched &&
-            formulario.controls.senha.hasError('required')
-          ) {
-            <span class="field-error">
-              Informe sua senha.
-            </span>
-          }
-        </div>
+          <div class="form-group">
+            <label for="senha">
+              Senha
+            </label>
 
-        @if (mensagem()) {
-          <div class="feedback-message">
-            {{ mensagem() }}
+            <div class="password-field">
+              <input
+                id="senha"
+                [type]="senhaVisivel() ? 'text' : 'password'"
+                formControlName="senha"
+                placeholder="Digite sua senha"
+                autocomplete="current-password"
+              />
+
+              <button
+                type="button"
+                class="password-toggle"
+                (click)="alternarVisibilidadeSenha()"
+              >
+                {{ senhaVisivel() ? 'Ocultar' : 'Mostrar' }}
+              </button>
+            </div>
+
+            @if (
+              formulario.controls.senha.touched &&
+              formulario.controls.senha.hasError('required')
+            ) {
+              <span class="field-error">
+                Informe sua senha.
+              </span>
+            }
           </div>
-        }
 
-        <button
-          type="submit"
-          class="submit-button"
+          <button
+            type="submit"
+            class="submit-button"
+            [disabled]="carregando()"
+          >
+            {{ carregando() ? 'Entrando...' : 'Entrar' }}
+          </button>
+
+        </form>
+
+      }
+
+      @if (mensagem()) {
+        <div
+          class="feedback-message"
+          [class.feedback-error]="tipoMensagem() === 'error'"
         >
-          Entrar
-        </button>
+          {{ mensagem() }}
+        </div>
+      }
 
-      </form>
+      @if (!token()) {
+        <div class="form-footer">
+          <p>
+            Ainda não possui uma conta?
+          </p>
 
-      <div class="form-footer">
-        <p>
-          Ainda não possui uma conta?
-        </p>
-
-        <a routerLink="/cadastro">
-          Criar uma conta
-        </a>
-      </div>
+          <a routerLink="/cadastro">
+            Criar uma conta
+          </a>
+        </div>
+      }
 
     </div>
   </section>

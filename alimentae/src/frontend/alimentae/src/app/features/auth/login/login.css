@@ -308,4 +308,32 @@
   .form-heading h2 {
     font-size: 2rem;
   }
+
+.submit-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.session-card {
+  padding: 1.5rem;
+  border: 1px solid #dce8d7;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.session-card h3 {
+  margin: 0 0 0.8rem;
+  color: var(--color-green-primary);
+}
+
+.session-card p {
+  margin: 0 0 1.25rem;
+  color: var(--color-text-muted);
+}
+
+.feedback-message.feedback-error {
+  background: #fce9e5;
+  color: #a83220;
+}
+
 }
