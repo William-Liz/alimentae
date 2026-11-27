@@ -127,4 +127,52 @@ public class OngController {
         return ResponseEntity.badRequest()
                 .body(Map.of("erro", exception.getMessage()));
     }
+
+
+    // Consultar ONG do usuário autenticado
+    @GetMapping("/me")
+    public ResponseEntity<OngResponseDto> buscarMinhaOng(
+            Authentication authentication) {
+
+        Ong ong = ongService.buscarMinhaOng(
+                authentication.getName()
+        );
+
+        return ResponseEntity.ok(paraDTO(ong));
+    }
+
+    // Atualizar ONG do usuário autenticado
+    @PutMapping("/me")
+    public ResponseEntity<OngResponseDto> atualizarMinhaOng(
+            @Valid @RequestBody OngAtualizacaoRequestDto request,
+            Authentication authentication) {
+
+        Ong dadosAtualizados = new Ong();
+
+        dadosAtualizados.setNome(request.nome());
+        dadosAtualizados.setCnpj(request.cnpj());
+        dadosAtualizados.setEndereco(request.endereco());
+        dadosAtualizados.setAreaAtuacao(request.areaAtuacao());
+        dadosAtualizados.setTelefone(request.telefone());
+
+        Ong ongAtualizada = ongService.atualizarMinhaOng(
+                dadosAtualizados,
+                authentication.getName()
+        );
+
+        return ResponseEntity.ok(paraDTO(ongAtualizada));
+    }
+
+    // Excluir ONG do usuário autenticado
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> excluirMinhaOng(
+            Authentication authentication) {
+
+        ongService.excluirMinhaOng(
+                authentication.getName()
+        );
+
+        return ResponseEntity.noContent().build();
+    }
+
 }

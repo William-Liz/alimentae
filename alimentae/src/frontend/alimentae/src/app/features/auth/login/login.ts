@@ -64,9 +64,15 @@ next: (resposta) => {
     return;
   }
 
+  if (resposta.tipoUsuario === 'ONG') {
+    this.router.navigateByUrl('/ongs');
+    return;
+  }
+
   this.router.navigateByUrl('/perfil');
 },
 
+      
 
       error: (erro: HttpErrorResponse) => {
         this.carregando.set(false);

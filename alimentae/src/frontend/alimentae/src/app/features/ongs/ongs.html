@@ -1,0 +1,421 @@
+
+<div class="ong-page">
+
+  <header class="page-header">
+    <div class="header-container">
+
+      <a class="brand" routerLink="/perfil">
+        <img
+          src="/images/logo-alimentae.png"
+          alt="Logo Alimentaê"
+        />
+
+        <span>
+          Alimenta<span class="brand-accent">ê</span>
+        </span>
+      </a>
+
+      <div class="header-actions">
+        <a routerLink="/perfil">
+          Meu perfil
+        </a>
+
+        <button
+          type="button"
+          class="logout-button"
+          (click)="sair()"
+        >
+          Sair
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <main class="ong-content">
+
+    <div class="page-heading">
+      <span class="eyebrow">
+        ÁREA INSTITUCIONAL
+      </span>
+
+      <h1>Minha ONG</h1>
+
+      <p>
+        Gerencie as informações da sua organização no Alimentaê.
+      </p>
+    </div>
+
+    @if (mensagemSucesso()) {
+      <div class="feedback-message feedback-success">
+        {{ mensagemSucesso() }}
+      </div>
+    }
+
+    @if (mensagemErro()) {
+      <div class="feedback-message feedback-error">
+        {{ mensagemErro() }}
+      </div>
+    }
+
+    @if (estado() === 'carregando') {
+
+      <section class="state-card">
+        <div class="loading-indicator"></div>
+
+        <p>
+          Carregando informações da ONG...
+        </p>
+      </section>
+
+    } @else if (estado() === 'erro') {
+
+      <section class="state-card">
+        <div class="empty-icon">
+          !
+        </div>
+
+        <h2>Não foi possível acessar sua ONG</h2>
+
+        <p>
+          Verifique sua conexão com o servidor e tente novamente.
+        </p>
+
+        <button
+          type="button"
+          class="primary-button"
+          (click)="carregarOng()"
+        >
+          Tentar novamente
+        </button>
+      </section>
+
+    } @else if (
+      estado() === 'cadastro' ||
+      estado() === 'edicao'
+    ) {
+
+      <section class="ong-card">
+
+        <div class="card-heading">
+          <div>
+            <span class="card-eyebrow">
+              {{ estado() === 'cadastro' ? 'NOVO CADASTRO' : 'ATUALIZAÇÃO' }}
+            </span>
+
+            <h2>
+              {{ estado() === 'cadastro' ? 'Cadastre sua ONG' : 'Editar informações' }}
+            </h2>
+
+            <p>
+              Informe os dados institucionais da sua organização.
+            </p>
+          </div>
+
+          <div class="card-icon">
+            +
+          </div>
+        </div>
+
+        <form
+          [formGroup]="formulario"
+          (ngSubmit)="salvar()"
+        >
+
+          <div class="form-group">
+            <label for="nome">
+              Nome da ONG
+            </label>
+
+            <input
+              id="nome"
+              type="text"
+              formControlName="nome"
+              placeholder="Nome da organização"
+              maxlength="150"
+              autocomplete="organization"
+            />
+
+            @if (
+              formulario.controls.nome.touched &&
+              formulario.controls.nome.hasError('required')
+            ) {
+              <span class="field-error">
+                Informe o nome da ONG.
+              </span>
+            }
+
+            @if (
+              formulario.controls.nome.touched &&
+              formulario.controls.nome.hasError('maxlength')
+            ) {
+              <span class="field-error">
+                O nome deve ter no máximo 150 caracteres.
+              </span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="cnpj">
+              CNPJ
+            </label>
+
+            <input
+              id="cnpj"
+              type="text"
+              formControlName="cnpj"
+              placeholder="00.000.000/0000-00"
+              maxlength="18"
+              inputmode="numeric"
+            />
+
+            @if (
+              formulario.controls.cnpj.touched &&
+              formulario.controls.cnpj.hasError('required')
+            ) {
+              <span class="field-error">
+                Informe o CNPJ.
+              </span>
+            }
+
+            @if (
+              formulario.controls.cnpj.touched &&
+              formulario.controls.cnpj.hasError('cnpjInvalido')
+            ) {
+              <span class="field-error">
+                O CNPJ deve possuir 14 números.
+              </span>
+            }
+
+            <span class="field-hint">
+              Digite os 14 números do CNPJ, com ou sem pontuação.
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label for="endereco">
+              Endereço
+            </label>
+
+            <input
+              id="endereco"
+              type="text"
+              formControlName="endereco"
+              placeholder="Rua, número, bairro, cidade e estado"
+              maxlength="255"
+              autocomplete="street-address"
+            />
+
+            @if (
+              formulario.controls.endereco.touched &&
+              formulario.controls.endereco.hasError('required')
+            ) {
+              <span class="field-error">
+                Informe o endereço da ONG.
+              </span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="areaAtuacao">
+              Área de atuação
+            </label>
+
+            <input
+              id="areaAtuacao"
+              type="text"
+              formControlName="areaAtuacao"
+              placeholder="Ex.: Assistência social, educação..."
+              maxlength="150"
+            />
+
+            @if (
+              formulario.controls.areaAtuacao.touched &&
+              formulario.controls.areaAtuacao.hasError('required')
+            ) {
+              <span class="field-error">
+                Informe a área de atuação.
+              </span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="telefone">
+              Telefone
+            </label>
+
+            <input
+              id="telefone"
+              type="tel"
+              formControlName="telefone"
+              placeholder="(00) 00000-0000"
+              maxlength="20"
+              autocomplete="tel"
+            />
+
+            @if (
+              formulario.controls.telefone.touched &&
+              formulario.controls.telefone.hasError('required')
+            ) {
+              <span class="field-error">
+                Informe o telefone.
+              </span>
+            }
+          </div>
+
+          <div class="form-actions">
+
+            @if (ong()) {
+              <button
+                type="button"
+                class="secondary-button"
+                (click)="cancelar()"
+                [disabled]="carregando()"
+              >
+                Cancelar
+              </button>
+            }
+
+            <button
+              type="submit"
+              class="primary-button"
+              [disabled]="carregando()"
+            >
+              {{
+                carregando()
+                  ? 'Salvando...'
+                  : estado() === 'cadastro'
+                    ? 'Cadastrar ONG'
+                    : 'Salvar alterações'
+              }}
+            </button>
+
+          </div>
+
+        </form>
+
+      </section>
+
+    } @else if (ong(); as dados) {
+
+      <section class="ong-card">
+
+        <div class="card-heading ong-heading">
+          <div>
+            <span class="card-eyebrow">
+              PERFIL INSTITUCIONAL
+            </span>
+
+            <h2>{{ dados.nome }}</h2>
+
+            <p>
+              Informações da organização cadastrada.
+            </p>
+          </div>
+
+          <span class="status-badge">
+            Cadastro realizado
+          </span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="information-section">
+
+          <h3>Dados da organização</h3>
+
+          <div class="information-grid">
+
+            <div class="information-item">
+              <span class="information-label">
+                Nome da ONG
+              </span>
+
+              <span class="information-value">
+                {{ dados.nome }}
+              </span>
+            </div>
+
+            <div class="information-item">
+              <span class="information-label">
+                CNPJ
+              </span>
+
+              <span class="information-value">
+                {{ dados.cnpj }}
+              </span>
+            </div>
+
+            <div class="information-item">
+              <span class="information-label">
+                Endereço
+              </span>
+
+              <span class="information-value">
+                {{ dados.endereco }}
+              </span>
+            </div>
+
+            <div class="information-item">
+              <span class="information-label">
+                Área de atuação
+              </span>
+
+              <span class="information-value">
+                {{ dados.areaAtuacao }}
+              </span>
+            </div>
+
+            <div class="information-item">
+              <span class="information-label">
+                Telefone
+              </span>
+
+              <span class="information-value">
+                {{ dados.telefone }}
+              </span>
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="card-footer">
+
+          <p>
+            Você pode atualizar ou excluir os dados da sua ONG.
+          </p>
+
+          <div class="form-actions">
+
+            <button
+              type="button"
+              class="danger-button"
+              (click)="excluir()"
+              [disabled]="carregando()"
+            >
+              Excluir cadastro
+            </button>
+
+            <button
+              type="button"
+              class="primary-button"
+              (click)="editar()"
+              [disabled]="carregando()"
+            >
+              Editar informações
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    }
+
+  </main>
+
+</div>

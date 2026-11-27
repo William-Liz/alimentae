@@ -9,6 +9,7 @@ import com.gp2.alimentae.exception.BusinessException;
 import com.gp2.alimentae.repository.EmpresaRepository;
 import com.gp2.alimentae.repository.OngRepository;
 import com.gp2.alimentae.repository.UsuarioRepository;
+import com.gp2.alimentae.repository.SolicitacaoRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -26,15 +27,18 @@ public class OngService {
     private final OngRepository ongRepository;
     private final UsuarioRepository usuarioRepository;
     private final EmpresaRepository empresaRepository;
+    private final SolicitacaoRepository solicitacaoRepository;
 
     public OngService(
             OngRepository ongRepository,
             UsuarioRepository usuarioRepository,
-            EmpresaRepository empresaRepository) {
+            EmpresaRepository empresaRepository,
+            SolicitacaoRepository solicitacaoRepository) {
 
         this.ongRepository = ongRepository;
         this.usuarioRepository = usuarioRepository;
         this.empresaRepository = empresaRepository;
+        this.solicitacaoRepository = solicitacaoRepository;
     }
 
     @Transactional(readOnly = true)
@@ -182,4 +186,63 @@ public class OngService {
 
         return ongRepository.save(ongExistente);
     }
+
+
+    // Buscar a ONG do usuário autenticado
+    @Transactional(readOnly = true)
+    public Ong buscarMinhaOng(String emailAutenticado) {
+
+        Usuario usuario = usuarioRepository
+                .findByEmail(emailAutenticado.trim().toLowerCase())
+                .orElseThrow(() ->
+                        new BusinessException(
+                                HttpStatus.NOT_FOUND,
+                                "Usuário autenticado não encontrado."
+                        ));
+
+        if (usuario.getTipoUsuario() != TipoUsuario.ONG) {
+            throw new AccessDeniedException(
+                    "Somente usuários do tipo ONG podem acessar esta funcionalidade."
+            );
+        }
+
+        return ongRepository.findByUsuario_Id(usuario.getId())
+                .orElseThrow(() ->
+                        new BusinessException(
+                                HttpStatus.NOT_FOUND,
+                                "Perfil de ONG não encontrado."
+                        ));
+    }
+
+    // Atualizar a ONG do usuário autenticado
+    @Transactional
+    public Ong atualizarMinhaOng(
+            Ong dadosAtualizados,
+            String emailAutenticado) {
+
+        Ong ongExistente = buscarMinhaOng(emailAutenticado);
+
+        return atualizar(
+                ongExistente.getId(),
+                dadosAtualizados,
+                emailAutenticado
+        );
+    }
+
+    // Excluir a ONG do usuário autenticado
+    @Transactional
+    public void excluirMinhaOng(String emailAutenticado) {
+
+        Ong ong = buscarMinhaOng(emailAutenticado);
+
+        if (solicitacaoRepository.existsByOng_Id(ong.getId())) {
+            throw new BusinessException(
+                    HttpStatus.CONFLICT,
+                    "Não é possível excluir esta ONG porque existem solicitações vinculadas."
+            );
+        }
+
+        ongRepository.delete(ong);
+    }
+
 }

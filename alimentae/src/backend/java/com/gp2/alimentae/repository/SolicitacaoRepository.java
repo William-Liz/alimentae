@@ -26,5 +26,7 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM Solicitacao s WHERE s.id = :id")
     Optional<Solicitacao> buscarPorIdComBloqueio(@Param("id") Long id);
+
+    boolean existsByOng_Id(Long ongId);
 }
 
