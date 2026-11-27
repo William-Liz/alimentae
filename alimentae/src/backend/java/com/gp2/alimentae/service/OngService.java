@@ -133,23 +133,23 @@ public class OngService {
                                 "Usuário não encontrado."
                         ));
 
-        if (usuario.getTipoUsuario() != TipoUsuario.ONG) {
+        if (usuarioAutenticado.getTipoUsuario() != TipoUsuario.ONG) {
             throw new BusinessException(
                     HttpStatus.BAD_REQUEST,
                     "O usuário informado não é do tipo ONG."
             );
         }
 
+        Long usuarioId = usuarioAutenticado.getId();
+
         if (ongRepository.findByUsuario_Id(usuarioId).isPresent()
                 || empresaRepository.findByUsuario_Id(usuarioId).isPresent()) {
             throw new BusinessException(
                     HttpStatus.CONFLICT,
-                    "Este usuário já possui um perfil institucional."
-                        new EntityNotFoundException(
-                                "Usuário autenticado não encontrado."
-                        ));
+                    "Este usuário já possui um perfil institucional.");
+        }
 
-        // Verifica se a ONG pertence ao usuário autenticado
+            // Verifica se a ONG pertence ao usuário autenticado
         if (!ongExistente.getUsuario().getId()
                 .equals(usuarioAutenticado.getId())) {
 
@@ -158,7 +158,7 @@ public class OngService {
             );
         }
 
-        // Valida o CNPJ
+            // Valida o CNPJ
         if (dadosAtualizados.getCnpj() == null) {
             throw new IllegalArgumentException(
                     "O CNPJ deve ser informado."
@@ -174,7 +174,7 @@ public class OngService {
             );
         }
 
-        // Verifica se outra ONG já utiliza esse CNPJ
+            // Verifica se outra ONG já utiliza esse CNPJ
         if (ongRepository.existsByCnpjAndIdNot(cnpj, id)) {
             throw new IllegalArgumentException(
                     "Este CNPJ já está cadastrado para outra ONG."
@@ -189,5 +189,6 @@ public class OngService {
         ongExistente.setTelefone(dadosAtualizados.getTelefone());
 
         return ongRepository.save(ongExistente);
+
     }
 }
