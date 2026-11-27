@@ -102,14 +102,6 @@ public class OngService {
             );
         }
 
-        if (ong.getUsuario() == null
-                || ong.getUsuario().getId() == null) {
-            throw new BusinessException(
-                    HttpStatus.BAD_REQUEST,
-                    "É necessário informar o usuário responsável."
-            );
-        }
-
         ong.setCnpj(cnpj);
 
         // Vincula a ONG ao usuário autenticado
@@ -118,13 +110,17 @@ public class OngService {
         return ongRepository.save(ong);
     }
 
+
     @Transactional
-    public Ong atualizar(Long id, Ong dadosAtualizados, String emailAutenticado) {
+    public Ong atualizar(
+            Long id,
+            Ong dadosAtualizados,
+            String emailAutenticado) {
 
         // Busca a ONG que será atualizada
         Ong ongExistente = buscarPorId(id);
 
-        // Identifica o usuário que está autenticado
+        // Identifica o usuário autenticado pelo JWT
         Usuario usuarioAutenticado = usuarioRepository
                 .findByEmail(emailAutenticado.trim().toLowerCase())
                 .orElseThrow(() ->
@@ -133,24 +129,17 @@ public class OngService {
                                 "Usuário não encontrado."
                         ));
 
-        if (usuario.getTipoUsuario() != TipoUsuario.ONG) {
-            throw new BusinessException(
-                    HttpStatus.BAD_REQUEST,
-                    "O usuário informado não é do tipo ONG."
+        // Somente usuários do tipo ONG podem atualizar um perfil de ONG
+        if (usuarioAutenticado.getTipoUsuario() != TipoUsuario.ONG) {
+            throw new AccessDeniedException(
+                    "Somente usuários do tipo ONG podem atualizar este perfil."
             );
         }
 
-        if (ongRepository.findByUsuario_Id(usuarioId).isPresent()
-                || empresaRepository.findByUsuario_Id(usuarioId).isPresent()) {
-            throw new BusinessException(
-                    HttpStatus.CONFLICT,
-                    "Este usuário já possui um perfil institucional."
-                        new EntityNotFoundException(
-                                "Usuário autenticado não encontrado."
-                        ));
-
         // Verifica se a ONG pertence ao usuário autenticado
-        if (!ongExistente.getUsuario().getId()
+        if (ongExistente.getUsuario() == null
+                || ongExistente.getUsuario().getId() == null
+                || !ongExistente.getUsuario().getId()
                 .equals(usuarioAutenticado.getId())) {
 
             throw new AccessDeniedException(
@@ -160,7 +149,8 @@ public class OngService {
 
         // Valida o CNPJ
         if (dadosAtualizados.getCnpj() == null) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "O CNPJ deve ser informado."
             );
         }
@@ -169,14 +159,16 @@ public class OngService {
                 .replaceAll("\\D", "");
 
         if (cnpj.length() != 14) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
                     "O CNPJ deve possuir 14 dígitos."
             );
         }
 
         // Verifica se outra ONG já utiliza esse CNPJ
         if (ongRepository.existsByCnpjAndIdNot(cnpj, id)) {
-            throw new IllegalArgumentException(
+            throw new BusinessException(
+                    HttpStatus.CONFLICT,
                     "Este CNPJ já está cadastrado para outra ONG."
             );
         }
