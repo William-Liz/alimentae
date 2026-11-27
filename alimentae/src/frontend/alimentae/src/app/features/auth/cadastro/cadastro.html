@@ -1,0 +1,237 @@
+
+<div class="auth-page">
+
+  <section class="brand-panel">
+    <div class="brand-content">
+
+      <img
+        class="brand-logo"
+        src="/images/logo-alimentae.png"
+        alt="Logo Alimentaê"
+      />
+
+      <h1>Alimentaê</h1>
+
+      <p class="brand-slogan">
+        Alimentando o amanhã,
+        a solidariedade ganha o sabor.
+      </p>
+
+      <div class="brand-decoration">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+      <p class="brand-description">
+        Faça parte de uma rede de colaboração
+        que conecta empresas e organizações sociais.
+      </p>
+
+    </div>
+  </section>
+
+  <section class="form-panel">
+    <div class="form-container">
+
+      <div class="form-heading">
+        <span class="form-eyebrow">
+          FAÇA PARTE DA NOSSA REDE
+        </span>
+
+        <h2>Crie sua conta</h2>
+
+        <p>
+          Preencha seus dados para começar.
+        </p>
+      </div>
+
+      <form
+        [formGroup]="formulario"
+        (ngSubmit)="cadastrar()"
+      >
+
+        <div class="form-group">
+          <label for="nome">
+            Nome
+          </label>
+
+          <input
+            id="nome"
+            type="text"
+            formControlName="nome"
+            placeholder="Nome da empresa ou ONG"
+            autocomplete="organization"
+          />
+
+          @if (
+            formulario.controls.nome.touched &&
+            formulario.controls.nome.hasError('required')
+          ) {
+            <span class="field-error">
+              Informe seu nome.
+            </span>
+          }
+
+          @if (
+            formulario.controls.nome.touched &&
+            formulario.controls.nome.hasError('minlength')
+          ) {
+            <span class="field-error">
+              Informe pelo menos 3 caracteres.
+            </span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="email">
+            E-mail
+          </label>
+
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="seuemail@exemplo.com"
+            autocomplete="email"
+          />
+
+          @if (
+            formulario.controls.email.touched &&
+            formulario.controls.email.invalid
+          ) {
+            <span class="field-error">
+              Informe um e-mail válido.
+            </span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="tipoUsuario">
+            Tipo de conta
+          </label>
+
+          <select
+            id="tipoUsuario"
+            formControlName="tipoUsuario"
+          >
+            <option value="" disabled>
+              Selecione o tipo de conta
+            </option>
+
+            <option value="EMPRESA">
+              Empresa
+            </option>
+
+            <option value="ONG">
+              Organização não governamental (ONG)
+            </option>
+          </select>
+
+          @if (
+            formulario.controls.tipoUsuario.touched &&
+            formulario.controls.tipoUsuario.hasError('required')
+          ) {
+            <span class="field-error">
+              Selecione o tipo de conta.
+            </span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="senha">
+            Senha
+          </label>
+
+          <div class="password-field">
+            <input
+              id="senha"
+              [type]="senhaVisivel() ? 'text' : 'password'"
+              formControlName="senha"
+              placeholder="Crie uma senha"
+              autocomplete="new-password"
+            />
+
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="alternarVisibilidadeSenha()"
+            >
+              {{ senhaVisivel() ? 'Ocultar' : 'Mostrar' }}
+            </button>
+          </div>
+
+          @if (
+            formulario.controls.senha.touched &&
+            formulario.controls.senha.hasError('required')
+          ) {
+            <span class="field-error">
+              Informe uma senha.
+            </span>
+          }
+
+          @if (
+            formulario.controls.senha.touched &&
+            formulario.controls.senha.hasError('minlength')
+          ) {
+            <span class="field-error">
+              A senha deve ter pelo menos 8 caracteres.
+            </span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="confirmarSenha">
+            Confirmar senha
+          </label>
+
+          <input
+            id="confirmarSenha"
+            [type]="senhaVisivel() ? 'text' : 'password'"
+            formControlName="confirmarSenha"
+            placeholder="Digite a senha novamente"
+            autocomplete="new-password"
+          />
+
+          @if (
+            formulario.controls.confirmarSenha.touched &&
+            formulario.controls.confirmarSenha.hasError('required')
+          ) {
+            <span class="field-error">
+              Confirme sua senha.
+            </span>
+          }
+        </div>
+
+        @if (mensagem()) {
+          <div
+            class="feedback-message"
+            [class.feedback-error]="tipoMensagem() === 'error'"
+          >
+            {{ mensagem() }}
+          </div>
+        }
+
+        <button
+          type="submit"
+          class="submit-button"
+        >
+          Criar conta
+        </button>
+
+      </form>
+
+      <div class="form-footer">
+        <p>
+          Já possui uma conta?
+        </p>
+
+        <a routerLink="/login">
+          Entrar
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+</div>

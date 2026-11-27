@@ -1,1 +1,73 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  /* Paleta oficial Alimentaê */
+  --color-green-primary: #14594a;
+  --color-green-secondary: #518141;
+
+  --color-orange-primary: #faa625;
+  --color-orange-secondary: #f4971d;
+  --color-orange-accent: #ef5835;
+
+  /* Cores complementares */
+  --color-background: #fcf6eb;
+  --color-surface: #ffffff;
+
+  --color-text: #263a33;
+  --color-text-muted: #62736c;
+
+  /* Dimensões */
+  --content-width: 1160px;
+
+  /* Tipografia */
+  font-family: 'TT Hoves', 'Segoe UI', Arial, sans-serif;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  min-height: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: 'TT Hoves', 'Segoe UI', Arial, sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-orange-accent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
