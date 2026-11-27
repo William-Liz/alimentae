@@ -1,15 +1,19 @@
+
 package com.gp2.alimentae.controller;
 
 import com.gp2.alimentae.dto.request.EmpresaRequestDto;
 import com.gp2.alimentae.dto.response.EmpresaResponseDto;
-import com.gp2.alimentae.entity.Empresa;
 import com.gp2.alimentae.service.EmpresaService;
+
+import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("api/empresas")
+@RequestMapping("/api/empresas")
 public class EmpresaController {
 
     private final EmpresaService empresaService;
@@ -18,25 +22,57 @@ public class EmpresaController {
         this.empresaService = empresaService;
     }
 
-    @GetMapping()
-    public List<Empresa> listarEmpresa() {
-        return empresaService.listar();
+    // Cadastrar empresa
+    @PostMapping
+    public ResponseEntity<EmpresaResponseDto> cadastrar(
+            @Valid @RequestBody EmpresaRequestDto request,
+            Authentication authentication) {
+
+        EmpresaResponseDto empresa = empresaService.cadastrar(
+                request,
+                authentication.getName()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(empresa);
     }
 
-    @GetMapping("/{id}")
-    public Empresa buscarPorId(@PathVariable Long id) {
-        return empresaService.buscarPorId(id);
+    // Consultar empresa autenticada
+    @GetMapping("/me")
+    public ResponseEntity<EmpresaResponseDto> buscarMinhaEmpresa(
+            Authentication authentication) {
+
+        EmpresaResponseDto empresa = empresaService.buscarMinhaEmpresa(
+                authentication.getName()
+        );
+
+        return ResponseEntity.ok(empresa);
     }
 
-    @DeleteMapping("/{id}")
-    public void deletarEmpresa(@PathVariable Long id) {
-        Empresa empresa = empresaService.buscarPorId(id);
-        empresaService.deletar(empresa);
+    // Atualizar empresa autenticada
+    @PutMapping("/me")
+    public ResponseEntity<EmpresaResponseDto> atualizar(
+            @Valid @RequestBody EmpresaRequestDto request,
+            Authentication authentication) {
+
+        EmpresaResponseDto empresa = empresaService.atualizarMinhaEmpresa(
+                request,
+                authentication.getName()
+        );
+
+        return ResponseEntity.ok(empresa);
     }
 
-    @PutMapping("/{id}")
-    public EmpresaResponseDto atualizar(@PathVariable Long id, @RequestBody EmpresaRequestDto empresa) {
-        return empresaService.atualizar(empresa, id);
-    }
+    // Excluir empresa autenticada
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deletar(
+            Authentication authentication) {
 
+        empresaService.deletarMinhaEmpresa(
+                authentication.getName()
+        );
+
+        return ResponseEntity.noContent().build();
+    }
 }

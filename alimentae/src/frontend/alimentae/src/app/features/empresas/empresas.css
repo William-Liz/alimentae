@@ -1,0 +1,488 @@
+
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.company-page {
+  min-height: 100vh;
+  background: var(--color-background);
+}
+
+/* Cabeçalho */
+
+.page-header {
+  background: var(--color-orange-primary);
+  box-shadow: 0 2px 12px rgb(80 55 12 / 10%);
+}
+
+.header-container {
+  display: flex;
+  width: min(100% - 3rem, 1160px);
+  min-height: 88px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-inline: auto;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: var(--color-green-primary);
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.07em;
+  text-decoration: none;
+}
+
+.brand img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #fcf6eb;
+  object-fit: contain;
+}
+
+.brand-accent {
+  color: var(--color-orange-accent);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.header-actions a {
+  color: var(--color-green-primary);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.logout-button {
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--color-green-primary);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-green-primary);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  background: var(--color-green-primary);
+  color: #ffffff;
+}
+
+/* Conteúdo */
+
+.company-content {
+  width: min(100% - 3rem, 960px);
+  margin-inline: auto;
+  padding-block: 4rem;
+}
+
+.page-heading {
+  margin-bottom: 2rem;
+}
+
+.eyebrow,
+.card-eyebrow {
+  color: var(--color-green-secondary);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.page-heading h1 {
+  margin: 0.6rem 0;
+  color: var(--color-green-primary);
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+}
+
+.page-heading p,
+.card-heading p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+/* Cartão principal */
+
+.company-card {
+  overflow: hidden;
+  border: 1px solid #e9e7dc;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 12px 35px rgb(20 89 74 / 5%);
+}
+
+.card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.card-heading h2 {
+  margin: 0.6rem 0;
+  color: var(--color-green-primary);
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.card-icon {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 16px;
+  background: #edf3e9;
+  color: var(--color-green-primary);
+  font-size: 2rem;
+  font-weight: 400;
+}
+
+.status-badge {
+  display: inline-flex;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  background: #e9f2e6;
+  color: var(--color-green-primary);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+/* Formulário */
+
+.company-card form {
+  padding: 0 2rem 2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-bottom: 1.3rem;
+}
+
+.form-group label {
+  color: var(--color-green-primary);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.form-group input {
+  width: 100%;
+  min-height: 50px;
+  padding: 0.85rem 1rem;
+  border: 1px solid #deded5;
+  border-radius: 9px;
+  background: #ffffff;
+  color: var(--color-text);
+  font-size: 0.95rem;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.form-group input:focus {
+  border-color: var(--color-green-secondary);
+  box-shadow: 0 0 0 3px rgb(81 129 65 / 12%);
+}
+
+.form-group input::placeholder {
+  color: #a1aaa3;
+}
+
+.field-error {
+  color: #c43f2b;
+  font-size: 0.8rem;
+}
+
+.field-hint {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+}
+
+/* Informações da empresa */
+
+.divider {
+  height: 1px;
+  background: #eeeae1;
+}
+
+.information-section {
+  padding: 2rem;
+}
+
+.information-section h3 {
+  margin: 0 0 1.5rem;
+  color: var(--color-green-primary);
+  font-size: 1.1rem;
+}
+
+.information-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.7rem;
+}
+
+.information-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.information-label {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.information-value {
+  overflow-wrap: anywhere;
+  color: var(--color-text);
+  font-size: 0.98rem;
+  font-weight: 650;
+}
+
+/* Ações */
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 1.5rem;
+}
+
+.primary-button,
+.secondary-button,
+.danger-button {
+  min-height: 45px;
+  padding: 0.75rem 1.2rem;
+  border: 0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+.primary-button {
+  background: var(--color-green-primary);
+  color: #ffffff;
+}
+
+.primary-button:hover {
+  background: var(--color-green-secondary);
+  transform: translateY(-1px);
+}
+
+.secondary-button {
+  border: 1px solid #deded5;
+  background: #ffffff;
+  color: var(--color-text-muted);
+}
+
+.secondary-button:hover {
+  background: #f3f3ed;
+}
+
+.danger-button {
+  border: 1px solid #d77a69;
+  background: #ffffff;
+  color: #b83c29;
+}
+
+.danger-button:hover {
+  background: #fce9e5;
+}
+
+.primary-button:disabled,
+.secondary-button:disabled,
+.danger-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.card-footer {
+  padding: 1.5rem 2rem;
+  background: #fffdf8;
+}
+
+.card-footer > p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+/* Mensagens */
+
+.feedback-message {
+  margin-bottom: 1.25rem;
+  padding: 0.9rem 1rem;
+  border-radius: 9px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.feedback-success {
+  background: #e9f2e6;
+  color: var(--color-green-primary);
+}
+
+.feedback-error {
+  background: #fce9e5;
+  color: #a83220;
+}
+
+/* Carregamento e estado vazio */
+
+.state-card {
+  display: flex;
+  min-height: 240px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  border: 1px solid #e9e7dc;
+  border-radius: 16px;
+  background: #ffffff;
+  text-align: center;
+}
+
+.state-card p {
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.state-card h2 {
+  margin: 0;
+  color: var(--color-green-primary);
+  font-size: 1.3rem;
+}
+
+.loading-indicator {
+  width: 36px;
+  height: 36px;
+  border: 4px solid #e5eddf;
+  border-top-color: var(--color-green-primary);
+  border-radius: 50%;
+  animation: loading 800ms linear infinite;
+}
+
+.empty-icon {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff0df;
+  color: var(--color-orange-accent);
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+@keyframes loading {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsividade */
+
+@media (max-width: 650px) {
+  .header-container {
+    width: min(100% - 2rem, 1160px);
+    min-height: 76px;
+    gap: 0.8rem;
+  }
+
+  .brand {
+    gap: 0.5rem;
+    font-size: 1.45rem;
+  }
+
+  .brand img {
+    width: 46px;
+    height: 46px;
+  }
+
+  .header-actions {
+    gap: 0.8rem;
+  }
+
+  .header-actions a {
+    font-size: 0.8rem;
+  }
+
+  .logout-button {
+    padding: 0.55rem 0.7rem;
+    font-size: 0.8rem;
+  }
+
+  .company-content {
+    width: min(100% - 2rem, 960px);
+    padding-block: 2.5rem;
+  }
+
+  .page-heading h1 {
+    font-size: 2.1rem;
+  }
+
+  .card-heading {
+    padding: 1.5rem;
+  }
+
+  .card-heading h2 {
+    font-size: 1.35rem;
+  }
+
+  .company-card form {
+    padding: 0 1.5rem 1.5rem;
+  }
+
+  .information-section {
+    padding: 1.5rem;
+  }
+
+  .information-grid {
+    grid-template-columns: 1fr;
+    gap: 1.3rem;
+  }
+
+  .card-footer {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+
+  .company-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

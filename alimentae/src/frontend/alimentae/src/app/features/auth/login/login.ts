@@ -55,10 +55,18 @@ export class Login {
     this.carregando.set(true);
 
     this.authService.login(this.formulario.getRawValue()).subscribe({
-      next: () => {
+      
+next: (resposta) => {
   this.carregando.set(false);
+
+  if (resposta.tipoUsuario === 'EMPRESA') {
+    this.router.navigateByUrl('/empresas');
+    return;
+  }
+
   this.router.navigateByUrl('/perfil');
 },
+
 
       error: (erro: HttpErrorResponse) => {
         this.carregando.set(false);

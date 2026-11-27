@@ -4,7 +4,6 @@ package com.gp2.alimentae.service;
 import com.gp2.alimentae.dto.request.EmpresaRequestDto;
 import com.gp2.alimentae.dto.response.EmpresaResponseDto;
 import com.gp2.alimentae.entity.Empresa;
-import com.gp2.alimentae.entity.Ong;
 import com.gp2.alimentae.entity.TipoUsuario;
 import com.gp2.alimentae.entity.Usuario;
 import com.gp2.alimentae.exception.BusinessException;
@@ -12,17 +11,13 @@ import com.gp2.alimentae.repository.EmpresaRepository;
 import com.gp2.alimentae.repository.OngRepository;
 import com.gp2.alimentae.repository.UsuarioRepository;
 
-import jakarta.persistence.EntityNotFoundException;
-
-import org.hibernate.usertype.BaseUserTypeSupport;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service
 public class EmpresaService {
+
     private final EmpresaRepository empresaRepository;
     private final UsuarioRepository usuarioRepository;
     private final OngRepository ongRepository;
@@ -37,39 +32,27 @@ public class EmpresaService {
         this.ongRepository = ongRepository;
     }
 
-    @Transactional(readOnly = true)
-    public List<Empresa> listar() {
-        return empresaRepository.findAll();
-    }
-
-    @Transactional(readOnly = true)
-    public Empresa buscarPorId(Long id) {
-        return empresaRepository.findById(id)
-                .orElseThrow(() ->
-                        new BusinessException(
-                                HttpStatus.NOT_FOUND,
-                                "Empresa não encontrada."
-                        ));
-    }
-
+    // Cadastrar empresa
     @Transactional
-    public Empresa cadastrar(Empresa empresa) {
+    public EmpresaResponseDto cadastrar(
+            EmpresaRequestDto request,
+            String emailAutenticado) {
 
-        if (empresa.getCnpj() == null) {
+        Usuario usuario = buscarUsuarioAutenticado(emailAutenticado);
+
+        validarTipoEmpresa(usuario);
+
+        // Verifica se o usuário já possui um perfil institucional
+        if (empresaRepository.findByUsuario_Id(usuario.getId()).isPresent()
+                || ongRepository.findByUsuario_Id(usuario.getId()).isPresent()) {
+
             throw new BusinessException(
-                    HttpStatus.BAD_REQUEST,
-                    "O CNPJ deve ser informado."
+                    HttpStatus.CONFLICT,
+                    "Este usuário já possui um perfil institucional."
             );
         }
 
-        String cnpj = empresa.getCnpj().replaceAll("\\D", "");
-
-        if (cnpj.length() != 14) {
-            throw new BusinessException(
-                    HttpStatus.BAD_REQUEST,
-                    "O CNPJ deve possuir 14 dígitos."
-            );
-        }
+        String cnpj = normalizarCnpj(request.cnpj());
 
         if (empresaRepository.existsByCnpj(cnpj)) {
             throw new BusinessException(
@@ -78,128 +61,149 @@ public class EmpresaService {
             );
         }
 
-        if (empresa.getUsuario() == null
-                || empresa.getUsuario().getId() == null) {
-            throw new BusinessException(
-                    HttpStatus.BAD_REQUEST,
-                    "É necessário informar o usuário responsável."
-            );
-        }
+        Empresa empresa = new Empresa();
 
-        Long usuarioId = empresa.getUsuario().getId();
-
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() ->
-                        new BusinessException(
-                                HttpStatus.NOT_FOUND,
-                                "Usuário não encontrado."
-                        ));
-
-        if (usuario.getTipoUsuario() != TipoUsuario.EMPRESA) {
-            throw new BusinessException(
-                    HttpStatus.BAD_REQUEST,
-                    "O usuário informado não é do tipo EMPRESA."
-            );
-        }
-
-        if (empresaRepository.findByUsuario_Id(usuarioId).isPresent()
-                || ongRepository.findByUsuario_Id(usuarioId).isPresent()) {
-            throw new BusinessException(
-                    HttpStatus.CONFLICT,
-                    "Este usuário já possui um perfil institucional."
-            );
-        }
-
+        empresa.setNomeFantasia(request.nomeFantasia().trim());
         empresa.setCnpj(cnpj);
+        empresa.setEndereco(request.endereco().trim());
+        empresa.setTelefone(request.telefone().trim());
         empresa.setUsuario(usuario);
 
-        return empresaRepository.save(empresa);
+        Empresa salva = empresaRepository.save(empresa);
+
+        return paraDTO(salva);
     }
 
-    public EmpresaResponseDto atualizar(EmpresaRequestDto request, Long id) {
-        Long usuarioId = request.usuarioId();
+    // Buscar empresa do usuário autenticado
+    @Transactional(readOnly = true)
+    public EmpresaResponseDto buscarMinhaEmpresa(String emailAutenticado) {
 
-        if (usuarioId == null) {
-            throw new BusinessException(
-                    HttpStatus.BAD_REQUEST,
-                    "É necessário informar o usuário responsável."
-            );
-        }
+        Usuario usuario = buscarUsuarioAutenticado(emailAutenticado);
 
-        Usuario usuario = usuarioRepository.findById(usuarioId)
+        validarTipoEmpresa(usuario);
+
+        Empresa empresa = empresaRepository
+                .findByUsuario_Id(usuario.getId())
                 .orElseThrow(() ->
                         new BusinessException(
                                 HttpStatus.NOT_FOUND,
-                                "Usuário não encontrado."
-                        ));
+                                "Perfil de empresa não encontrado."
+                        )
+                );
 
-        if (usuario.getTipoUsuario() != TipoUsuario.EMPRESA) {
+        return paraDTO(empresa);
+    }
+
+    // Atualizar empresa do usuário autenticado
+    @Transactional
+    public EmpresaResponseDto atualizarMinhaEmpresa(
+            EmpresaRequestDto request,
+            String emailAutenticado) {
+
+        Usuario usuario = buscarUsuarioAutenticado(emailAutenticado);
+
+        validarTipoEmpresa(usuario);
+
+        Empresa empresa = empresaRepository
+                .findByUsuario_Id(usuario.getId())
+                .orElseThrow(() ->
+                        new BusinessException(
+                                HttpStatus.NOT_FOUND,
+                                "Perfil de empresa não encontrado."
+                        )
+                );
+
+        String cnpj = normalizarCnpj(request.cnpj());
+
+        if (empresaRepository.existsByCnpjAndIdNot(
+                cnpj,
+                empresa.getId())) {
+
             throw new BusinessException(
-                    HttpStatus.BAD_REQUEST,
-                    "O usuário informado não é do tipo EMPRESA."
+                    HttpStatus.CONFLICT,
+                    "Este CNPJ já está cadastrado para outra empresa."
             );
         }
 
-        if (request.cnpj().isBlank()) {
-            throw new BusinessException(HttpStatus.BAD_REQUEST ,"O CNPJ deve ser informado.");
+        empresa.setNomeFantasia(request.nomeFantasia().trim());
+        empresa.setCnpj(cnpj);
+        empresa.setEndereco(request.endereco().trim());
+        empresa.setTelefone(request.telefone().trim());
+
+        Empresa atualizada = empresaRepository.save(empresa);
+
+        return paraDTO(atualizada);
+    }
+
+    // Excluir empresa do usuário autenticado
+    @Transactional
+    public void deletarMinhaEmpresa(String emailAutenticado) {
+
+        Usuario usuario = buscarUsuarioAutenticado(emailAutenticado);
+
+        validarTipoEmpresa(usuario);
+
+        Empresa empresa = empresaRepository
+                .findByUsuario_Id(usuario.getId())
+                .orElseThrow(() ->
+                        new BusinessException(
+                                HttpStatus.NOT_FOUND,
+                                "Perfil de empresa não encontrado."
+                        )
+                );
+
+        empresaRepository.delete(empresa);
+    }
+
+    // Buscar usuário pelo e-mail contido no JWT
+    private Usuario buscarUsuarioAutenticado(String email) {
+
+        return usuarioRepository
+                .findByEmail(email.trim().toLowerCase())
+                .orElseThrow(() ->
+                        new BusinessException(
+                                HttpStatus.NOT_FOUND,
+                                "Usuário autenticado não encontrado."
+                        )
+                );
+    }
+
+    // Verificar tipo de usuário
+    private void validarTipoEmpresa(Usuario usuario) {
+
+        if (usuario.getTipoUsuario() != TipoUsuario.EMPRESA) {
+            throw new BusinessException(
+                    HttpStatus.FORBIDDEN,
+                    "Somente usuários do tipo EMPRESA podem acessar esta funcionalidade."
+            );
         }
-        if (request.cnpj().trim().length() != 14) {
+    }
+
+    // Remover caracteres não numéricos e validar CNPJ
+    private String normalizarCnpj(String cnpj) {
+
+        String cnpjLimpo = cnpj.replaceAll("\\D", "");
+
+        if (cnpjLimpo.length() != 14) {
             throw new BusinessException(
                     HttpStatus.BAD_REQUEST,
                     "O CNPJ deve possuir 14 dígitos."
             );
         }
-        if (request.nomeFantasia().isBlank()) {
-            throw new BusinessException(HttpStatus.BAD_REQUEST,"O nome deve ser informado.");
-        }
 
-        String cnpj = request.cnpj().replaceAll("\\D", "");
-
-        Empresa empresa = buscarPorId(id);
-
-        empresa.setNomeFantasia(request.nomeFantasia());
-        empresa.setCnpj(cnpj);
-        empresa.setEndereco(request.endereco());
-        empresa.setTelefone(request.telefone());
-
-        empresaRepository.save(empresa);
-        return paraDTO(empresa);
+        return cnpjLimpo;
     }
 
-    public void deletar (Empresa empresa) {
-        if (empresa.getUsuario() == null
-                || empresa.getUsuario().getId() == null) {
-            throw new BusinessException(
-                    HttpStatus.BAD_REQUEST,
-                    "É necessário informar o usuário responsável."
-            );
-        }
+    // Converter entidade para DTO de resposta
+    private EmpresaResponseDto paraDTO(Empresa empresa) {
 
-        Long usuarioId = empresa.getUsuario().getId();
-
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() ->
-                        new BusinessException(
-                                HttpStatus.NOT_FOUND,
-                                "Usuário não encontrado."
-                        ));
-
-        if (usuario.getTipoUsuario() != TipoUsuario.EMPRESA) {
-            throw new BusinessException(
-                    HttpStatus.BAD_REQUEST,
-                    "O usuário informado não é do tipo EMPRESA."
-            );
-        }
-
-        empresaRepository.delete(empresa);
-    }
-
-    public EmpresaResponseDto paraDTO(Empresa empresa) {
-        return new EmpresaResponseDto(empresa.getId(),
+        return new EmpresaResponseDto(
+                empresa.getId(),
                 empresa.getNomeFantasia(),
                 empresa.getCnpj(),
                 empresa.getEndereco(),
                 empresa.getTelefone(),
-                empresa.getUsuario().getId());
+                empresa.getUsuario().getId()
+        );
     }
 }
